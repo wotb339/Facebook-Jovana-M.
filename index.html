@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Geräte-Informationen</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Geräte-Informationen</h1>
+  <p><strong>Browser/User-Agent:</strong> <span id="ua"></span></p>
+  <p><strong>Gerät:</strong> <span id="device"></span></p>
+  <p><strong>Plattform (OS):</strong> <span id="platform"></span></p>
+  <p><strong>Browser-Name:</strong> <span id="browser"></span></p>
+
+  <script>
+    const ua = navigator.userAgent;
+
+    // Gerät erkennen
+    let deviceType = "Unbekannt";
+    if (/Android/i.test(ua)) {
+      deviceType = "Android-Smartphone";
+    } else if (/iPhone|iPad|iPod/i.test(ua)) {
+      deviceType = "iOS-Gerät";
+    } else {
+      deviceType = "Desktop oder anderes Gerät";
+    }
+
+    // Plattform
+    const platform = navigator.platform || "Nicht verfügbar";
+
+    // Browser erkennen (verbessert)
+    let browser = "Unbekannt";
+    if (/Edg/i.test(ua)) {
+      browser = "Microsoft Edge";
+    } else if (/OPR|Opera/i.test(ua)) {
+      browser = "Opera";
+    } else if (/Chrome/i.test(ua) && !/Edg/i.test(ua)) {
+      browser = "Chrome";
+    } else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) {
+      browser = "Safari";
+    } else if (/Firefox/i.test(ua)) {
+      browser = "Firefox";
+    }
+
+    // Ausgabe
+    document.getElementById("ua").textContent = ua;
+    document.getElementById("device").textContent = deviceType;
+    document.getElementById("platform").textContent = platform;
+    document.getElementById("browser").textContent = browser;
+  </script>
+</body>
+</html>
